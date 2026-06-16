@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolli Sowmya | AI/ML Developer</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#030014", /* Deep space black/blue */
+                        card: "#11122a", /* Dark blue from your image */
+                        primary: "#8b5cf6",
+                        secondary: "#6366f1",
+                        accent: "#d8b4fe",
+                        "text-gray": "#9CA3AF",
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            margin: 0;
+            background-color: #030014;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        html { scroll-behavior: smooth; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030014; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+
+        /* Selection Color */
+        ::selection { background: #8b5cf6; color: white; }
+        
+        /* Utility for 3D preservation */
+        .preserve-3d { transform-style: preserve-3d; }
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "three": "https://esm.sh/three@0.161.0",
+            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three",
+            "@react-three/drei": "https://esm.sh/@react-three/drei@9.99.0?external=react,react-dom,three,@react-three/fiber",
+            "framer-motion": "https://esm.sh/framer-motion@11.0.3?external=react,react-dom",
+            "maath-random": "https://esm.sh/maath@0.10.7/random/dist/maath-random.esm"
+        }
+    }
+    </script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useRef, useMemo, useState } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Canvas, useFrame } from '@react-three/fiber';
+        import { Points, PointMaterial } from '@react-three/drei';
+        import * as random from 'maath-random';
+        import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'framer-motion';
+
+        // --- ICONS ---
+        // New icons matching your reference image
+        const IconBot = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>;
+        const IconLaptop = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>;
+        const IconPalette = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>;
+        const IconSettings = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.72l-.15.1a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.72l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
+        
+        // Standard Icons
+        const IconMail = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+        const IconGithub = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>;
+        const IconLinkedin = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>;
+        const IconMapPin = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+        const IconLink = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+        const IconChevronDown = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m6 9 6 6 6-6"/></svg>;
+        const IconCode = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>;
+        const IconAward = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>;
+
+        // --- 3D BACKGROUND ---
+        function StarField(props) {
+            const ref = useRef();
+            const sphere = useMemo(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }), []);
+
+            useFrame((state, delta) => {
+                ref.current.rotation.x -= delta / 10;
+                ref.current.rotation.y -= delta / 15;
+            });
+
+            return (
+                <group rotation={[0, 0, Math.PI / 4]}>
+                    <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+                        <PointMaterial
+                            transparent
+                            color="#8b5cf6"
+                            size={0.005}
+                            sizeAttenuation={true}
+                            depthWrite={false}
+                        />
+                    </Points>
+                </group>
+            );
+        }
+
+        function Background3D() {
+            return (
+                <div className="fixed top-0 left-0 w-full h-full -z-10 bg-[#030014]">
+                    <Canvas camera={{ position: [0, 0, 1] }}>
+                        <StarField />
+                    </Canvas>
+                </div>
+            );
+        }
+
+        // --- SPOTLIGHT TILT CARD (New Feature) ---
+        function SpotlightCard({ children, className = "" }) {
+            const mouseX = useMotionValue(0);
+            const mouseY = useMotionValue(0);
+
+            // Tilt Physics
+            const rotateX = useTransform(mouseY, [-0.5, 0.5], ["15deg", "-15deg"]);
+            const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+            // Spotlight Logic
+            function handleMouseMove({ currentTarget, clientX, clientY }) {
+                let { left, top, width, height } = currentTarget.getBoundingClientRect();
+                let x = clientX - left;
+                let y = clientY - top;
+                
+                // For Spotlight Background
+                mouseX.set((x / width) - 0.5);
+                mouseY.set((y / height) - 0.5);
+                
+                // Write directly to CSS variable for performance
+                currentTarget.style.setProperty("--mouse-x", `${x}px`);
+                currentTarget.style.setProperty("--mouse-y", `${y}px`);
+            }
+
+            return (
+                <motion.div
+                    className={`relative group preserve-3d transition-transform duration-200 ease-out ${className}`}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={() => {
+                        mouseX.set(0); 
+                        mouseY.set(0); 
+                    }}
+                    style={{ 
+                        rotateX, 
+                        rotateY, 
+                        transformStyle: "preserve-3d" 
+                    }}
+                >
+                    {/* Spotlight Gradient Layer */}
+                    <div 
+                        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
+                        style={{
+                            background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(139, 92, 246, 0.15), transparent 40%)`
+                        }}
+                    />
+                    
+                    {/* Content Container (with slight 3D pop) */}
+                    <div className="relative h-full bg-[#11122a]/90 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-2xl overflow-hidden" style={{ transform: "translateZ(20px)" }}>
+                        {children}
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // --- DATA ---
+        
+        // Updated Skills Data based on your image
+        const skillsData = [
+            {
+                title: "Programming",
+                icon: <IconSettings className="w-10 h-10 text-gray-300 mb-4" />,
+                items: ["Java", "Python", "C", "SQL"]
+            },
+            {
+                title: "Web Development",
+                icon: <IconLaptop className="w-10 h-10 text-cyan-400 mb-4" />,
+                items: ["HTML/CSS", "JavaScript", "React.js", "REST APIs"]
+            },
+            {
+                title: "AI & Technologies",
+                icon: <IconBot className="w-10 h-10 text-pink-400 mb-4" />,
+                items: ["Computer Vision", "OpenCV", "NLP", "LLM Integration"]
+            },
+            {
+                title: "CS Fundamentals & Tools",
+                icon: <IconPalette className="w-10 h-10 text-orange-400 mb-4" />,
+                items: ["DSA & OOP", "DBMS", "Operating Systems", "Git & GitHub"]
+            }
+        ];
+
+        const projects = [
+            {
+                title: 'RIA Assistant',
+                desc: 'AI-powered voice assistant supporting natural conversations, speech interaction, intelligent responses, and automation features.',
+                tags: ['Python', 'Flask', 'AI', 'NLP'],
+                icon: <IconBot className="w-6 h-6 text-white"/>,
+                github: 'https://github.com/Sowmya-Kolli/RIA-AI-Assistant',
+                demo: null
+            },
+            {
+                title: 'VisionSentinel',
+                desc: 'Computer vision based security system for face recognition, intruder detection, and real-time monitoring.',
+                tags: ['Python', 'OpenCV', 'Streamlit', 'Computer Vision'],
+                icon: <IconCode className="w-6 h-6 text-white"/>,
+                github: 'https://github.com/Sowmya-Kolli/VisionSentinel-Intruder-Detection-System',
+                demo: 'https://visionsentinel-intruder-detection-system-navmreb5fkkcr5sot5vjg.streamlit.app/'
+            },
+            {
+                title: 'FORGE',
+                desc: 'Modern productivity management platform for task organization, workflow tracking, and analytics visualization.',
+                tags: ['Next.js', 'React', 'TypeScript', 'Supabase'],
+                icon: <IconSettings className="w-6 h-6 text-white"/>,
+                github: 'https://github.com/Sowmya-Kolli/forge-execution-intelligence',
+                demo: 'https://forge-execution-intelligence.vercel.app/'
+            },
+            {
+                title: 'TribalEase',
+                desc: 'Smart financial assistance platform with loan tools, multilingual support, voice features, and document processing.',
+                tags: ['JavaScript', 'Tailwind', 'OCR', 'Web APIs'],
+                icon: <IconPalette className="w-6 h-6 text-white"/>,
+                github: 'https://github.com/Sowmya-Kolli/Interest-Calculator',
+                demo: 'https://interest-calculator-ochre.vercel.app/'
+            },
+            {
+                title: 'RoboCoupler EduTech',
+                desc: 'Runner-up hackathon project: responsive educational platform with modern UI and interactive design.',
+                tags: ['HTML/CSS', 'JavaScript', 'Tailwind'],
+                icon: <IconLaptop className="w-6 h-6 text-white"/>,
+                github: 'https://github.com/Sowmya-Kolli/robocoupler-edutech',
+                demo: 'https://robocoupler-edutech.vercel.app/'
+            }
+        ];
+
+        const certificationsData = [
+            {
+                title: "Full Stack Development Integrated with AI",
+                issuer: "RoboCoupler Techno Solutions Pvt. Ltd.",
+                link: "https://drive.google.com/file/d/1laPeByeiLjieE-Ip4NNbHkoZQQUHXyHt/view?usp=drive_link"
+            },
+            {
+                title: "48-Hour Front-End Build-a-thon Runner-Up",
+                issuer: "RoboCoupler Techno Solutions Pvt. Ltd.",
+                link: "https://drive.google.com/file/d/1ug4qfpjryS87iqpvDOBoQAhGmuMOca2y/view?usp=drive_link"
+            },
+            {
+                title: "Java Full Stack with React JS & AI",
+                issuer: "Brainovision Solutions India Pvt. Ltd.",
+                link: "https://drive.google.com/file/d/1SOqRSwaMkL0pnDLwTytTkOlfgW9x1Eof/view?usp=drive_link"
+            }
+        ];
+
+        // --- ANIMATION VARIANTS ---
+        const fadeInUp = {
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+        };
+
+        const staggerContainer = {
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+        };
+
+        function App() {
+            const [imgError, setImgError] = useState(false);
+            return (
+                <div className="relative text-white antialiased font-sans">
+                    <Background3D />
+
+                    {/* Navigation */}
+                    <nav className="fixed top-0 w-full z-50 px-6 py-6 backdrop-blur-sm border-b border-white/5">
+                        <div className="max-w-7xl mx-auto flex justify-between items-center">
+                            <motion.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600"
+                            >
+                                KS.
+                            </motion.div>
+                            <div className="hidden md:flex gap-8 text-sm font-medium text-gray-300">
+                                {['Home', 'About', 'Experience', 'Skills', 'Projects', 'Certifications', 'Contact'].map((item, i) => (
+                                    <motion.a 
+                                        key={item}
+                                        href={`#${item.toLowerCase()}`}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="hover:text-primary transition-colors"
+                                    >
+                                        {item}
+                                    </motion.a>
+                                ))}
+                            </div>
+                            <motion.a 
+                                href="mailto:sowmyakolli18@gmail.com"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="hidden md:inline-block px-6 py-2 rounded-full border border-white/10 hover:bg-white/10 transition-all text-sm"
+                            >
+                                Let's Talk
+                            </motion.a>
+                        </div>
+                    </nav>
+
+                    {/* HERO SECTION */}
+                    <section id="home" className="min-h-screen flex flex-col justify-center items-center relative px-6 py-20">
+                        <div className="max-w-7xl w-full mx-auto grid md:grid-cols-12 gap-12 items-center z-10">
+                            {/* Text Content */}
+                            <motion.div 
+                                initial="hidden"
+                                animate="visible"
+                                variants={staggerContainer}
+                                className="md:col-span-7 text-center md:text-left flex flex-col justify-center"
+                            >
+                                <motion.div variants={fadeInUp} className="mb-4 inline-block px-4 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-sm font-medium w-fit mx-auto md:mx-0">
+                                    Software Developer | AI Enthusiast
+                                </motion.div>
+                                <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-tight">
+                                    Kolli <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 animate-gradient">Sowmya</span>
+                                </motion.h1>
+                                <motion.p variants={fadeInUp} className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl">
+                                    Computer Science Engineering student passionate about building practical software solutions by combining modern web technologies, artificial intelligence, and strong computer science fundamentals.
+                                </motion.p>
+                                <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center">
+                                    <a href="#projects" className="px-8 py-4 rounded-full bg-primary hover:bg-violet-600 text-white font-semibold shadow-lg shadow-primary/25 transition-all transform hover:scale-105">
+                                        View My Work
+                                    </a>
+                                    <a href="resume.pdf" target="_blank" className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/5 font-semibold transition-all backdrop-blur-md">
+                                        Download Resume
+                                    </a>
+                                </motion.div>
+                            </motion.div>
+
+                            {/* Profile Image Container */}
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                className="md:col-span-5 flex justify-center items-center"
+                            >
+                                <div className="relative group">
+                                    {/* Pulsing glowing background */}
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 rounded-full blur-xl opacity-60 group-hover:opacity-85 transition duration-1000 animate-pulse"></div>
+                                    
+                                    {/* Outer Circle Ring */}
+                                    <div className="relative w-56 h-56 md:w-72 md:h-72 rounded-full p-1 bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-500 shadow-2xl">
+                                        {/* Inner Circle Frame */}
+                                        <div className="w-full h-full rounded-full bg-[#0d0d21] overflow-hidden flex items-center justify-center relative">
+                                            {!imgError ? (
+                                                <img 
+                                                    src="assets/profile.jpg" 
+                                                    alt="Kolli Sowmya" 
+                                                    onError={() => setImgError(true)} 
+                                                    className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center">
+                                                    <span className="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-300 to-blue-400 select-none tracking-wider">SK</span>
+                                                    <div className="absolute bottom-6 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-gray-500 font-semibold tracking-wider uppercase">Profile</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                        
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.5, duration: 1 }}
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10"
+                        >
+                            <IconChevronDown className="animate-bounce text-gray-500 w-8 h-8" />
+                        </motion.div>
+                    </section>
+
+                    {/* ABOUT SECTION (UPDATED LAYOUT) */}
+                    <section id="about" className="py-24 px-4 relative z-10">
+                        <div className="max-w-6xl mx-auto">
+                            <motion.div 
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                variants={fadeInUp}
+                                className="text-center mb-16"
+                            >
+                                <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">About Me</h2>
+                            </motion.div>
+
+                            <motion.div 
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                variants={staggerContainer}
+                                className="grid md:grid-cols-2 gap-8"
+                            >
+                                {/* Card 1: Who I Am */}
+                                <SpotlightCard>
+                                    <h3 className="text-2xl font-bold mb-4 text-cyan-400">Who I Am</h3>
+                                    <p className="text-gray-300 leading-relaxed mb-4">
+                                        I am a Computer Science Engineering student passionate about software development and building AI-integrated applications.
+                                    </p>
+                                    <p className="text-gray-300 leading-relaxed mb-6">
+                                        I enjoy creating practical solutions using programming, web technologies, and intelligent systems while continuously improving my engineering fundamentals.
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-sm border border-purple-500/20">Software Developer</span>
+                                        <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-sm border border-blue-500/20">AI Enthusiast</span>
+                                        <span className="px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 text-sm border border-pink-500/20">Problem Solver</span>
+                                    </div>
+                                </SpotlightCard>
+
+                                {/* Card 2: Key Strengths */}
+                                <SpotlightCard>
+                                    <h3 className="text-2xl font-bold mb-4 text-purple-400">Key Strengths</h3>
+                                    <ul className="space-y-4 text-gray-300">
+                                        <li className="flex items-start gap-3">
+                                            <span className="text-xl">⚡</span>
+                                            <span>Building AI-integrated practical applications</span>
+                                        </li>
+                                        <li className="flex items-start gap-3">
+                                            <span className="text-xl">💻</span>
+                                            <span>Experience with web development and modern technologies</span>
+                                        </li>
+                                        <li className="flex items-start gap-3">
+                                            <span className="text-xl">🏆</span>
+                                            <span>Runner-Up in 48-Hour Front-End Build-a-thon</span>
+                                        </li>
+                                        <li className="flex items-start gap-3">
+                                            <span className="text-xl">🚀</span>
+                                            <span>Strong interest in problem solving and software engineering</span>
+                                        </li>
+                                    </ul>
+                                </SpotlightCard>
+                            </motion.div>
+                        </div>
+                    </section>
+
+                    {/* EXPERIENCE SECTION */}
+                    <section id="experience" className="py-24 px-4 relative z-10">
+                        <div className="max-w-6xl mx-auto">
+                            <motion.div 
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                variants={fadeInUp}
+                                className="text-center mb-16"
+                            >
+                                <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Experience</h2>
+                            </motion.div>
+
+                            <motion.div 
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                variants={fadeInUp}
+                            >
+                                <SpotlightCard className="w-full">
+                                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-white mb-1">Full Stack Developer Intern (AI Integrated)</h3>
+                                            <p className="text-lg text-purple-400 font-semibold mb-4">RoboCoupler Techno Solutions Pvt. Ltd.</p>
+                                            <ul className="space-y-3 text-gray-300 text-sm md:text-base leading-relaxed">
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-purple-400 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                                    <span>Developed AI-integrated applications combining web technologies and intelligent features.</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-purple-400 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                                    <span>Built RIA Assistant with voice interaction, NLP-based conversations, and automation capabilities.</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-purple-400 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                                    <span>Worked with Python, Flask, APIs, and modern development practices.</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div className="text-left md:text-right shrink-0">
+                                            <span className="inline-block px-4 py-1.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-sm font-semibold">
+                                                May 2025 - July 2025
+                                            </span>
+                                        </div>
+                                    </div>
+                                </SpotlightCard>
+                            </motion.div>
+                        </div>
+                    </section>
+
+                    {/* SKILLS SECTION (UPDATED LAYOUT & CARDS) */}
+                    <section id="skills" className="py-24 px-4 relative z-10">
+                        <div className="max-w-6xl mx-auto">
+                            <motion.div 
+                                initial="hidden" 
+                                whileInView="visible" 
+                                viewport={{ once: true }}
+                                variants={fadeInUp}
+                                className="text-center mb-16"
+                            >
+                                <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Tech Stack</h2>
+                            </motion.div>
+
+                            <motion.div 
+                                variants={staggerContainer} 
+                                initial="hidden" 
+                                whileInView="visible" 
+                                viewport={{ once: true }}
+                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                            >
+                                {skillsData.map((skill, index) => (
+                                    <motion.div key={index} variants={fadeInUp} className="h-full">
+                                        <SpotlightCard className="h-full">
+                                            <div className="mb-4">{skill.icon}</div>
+                                            <h3 className="text-xl font-bold text-white mb-4">{skill.title}</h3>
+                                            <ul className="space-y-2">
+                                                {skill.items.map((item, idx) => (
+                                                    <li key={idx} className="flex items-center text-gray-400 text-sm">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-2"></span>
+                                                        {item}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </SpotlightCard>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        </div>
+                    </section>
+
+                    {/* PROJECTS SECTION */}
+                    <section id="projects" className="py-24 px-4 relative z-10">
+                        <div className="max-w-6xl mx-auto">
+                            <motion.div 
+                                initial="hidden" 
+                                whileInView="visible" 
+                                viewport={{ once: true }}
+                                className="mb-16 text-center"
+                            >
+                                <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Featured Projects</h2>
+                                <p className="text-gray-400">Highlights from my development journey</p>
+                            </motion.div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {projects.slice(0, 3).map((project, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: index * 0.2 }}
+                                    >
+                                        <SpotlightCard className="h-full">
+                                            <div className="flex flex-col h-full">
+                                                <div className="h-48 bg-gradient-to-br from-[#1a1b35] to-[#0f1021] rounded-lg mb-6 relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
+                                                    <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
+                                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
+                                                        {project.icon}
+                                                    </div>
+                                                </div>
+                                                
+                                                <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{project.title}</h3>
+                                                <p className="text-gray-400 mb-6 text-sm leading-relaxed">{project.desc}</p>
+                                                
+                                                <div className="flex flex-wrap gap-2 mb-8">
+                                                    {project.tags.map(tag => (
+                                                        <span key={tag} className="text-xs font-medium px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <div className="flex gap-4 mt-auto">
+                                                    {project.demo ? (
+                                                        <a href={project.demo} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                                                            Live Demo <IconLink className="w-4 h-4" />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-not-allowed select-none">
+                                                            Live Demo <IconLink className="w-4 h-4" />
+                                                        </span>
+                                                    )}
+                                                    {project.github ? (
+                                                        <a href={project.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                                                            GitHub <IconGithub className="w-4 h-4" />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-not-allowed select-none">
+                                                            GitHub <IconGithub className="w-4 h-4" />
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </SpotlightCard>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Other Projects Heading */}
+                            <motion.div 
+                                initial="hidden" 
+                                whileInView="visible" 
+                                viewport={{ once: true }}
+                                className="mt-24 mb-16 text-center"
+                            >
+                                <h3 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Other Projects</h3>
+                                <p className="text-gray-400">Additional development works</p>
+                            </motion.div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                                {projects.slice(3).map((project, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: index * 0.2 }}
+                                    >
+                                        <SpotlightCard className="h-full">
+                                            <div className="flex flex-col h-full">
+                                                <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{project.title}</h3>
+                                                <p className="text-gray-400 mb-6 text-sm leading-relaxed">{project.desc}</p>
+                                                
+                                                <div className="flex flex-wrap gap-2 mb-8">
+                                                    {project.tags.map(tag => (
+                                                        <span key={tag} className="text-xs font-medium px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <div className="flex gap-4 mt-auto">
+                                                    {project.demo ? (
+                                                        <a href={project.demo} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                                                            Live Demo <IconLink className="w-4 h-4" />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-not-allowed select-none">
+                                                            Live Demo <IconLink className="w-4 h-4" />
+                                                        </span>
+                                                    )}
+                                                    {project.github ? (
+                                                        <a href={project.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                                                            GitHub <IconGithub className="w-4 h-4" />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-not-allowed select-none">
+                                                            GitHub <IconGithub className="w-4 h-4" />
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </SpotlightCard>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* CERTIFICATIONS SECTION */}
+                    <section id="certifications" className="py-24 px-4 relative z-10">
+                        <div className="max-w-6xl mx-auto">
+                            <motion.div 
+                                initial="hidden" 
+                                whileInView="visible" 
+                                viewport={{ once: true }}
+                                variants={fadeInUp}
+                                className="text-center mb-16"
+                            >
+                                <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Certifications</h2>
+                            </motion.div>
+
+                            <motion.div 
+                                variants={staggerContainer} 
+                                initial="hidden" 
+                                whileInView="visible" 
+                                viewport={{ once: true }}
+                                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                            >
+                                {certificationsData.map((cert, index) => (
+                                    <motion.div key={index} variants={fadeInUp} className="h-full">
+                                        <SpotlightCard className="h-full">
+                                            <div className="flex flex-col h-full justify-between">
+                                                <div>
+                                                    <div className="p-3 bg-white/5 rounded-lg text-primary w-fit mb-4">
+                                                        <IconAward className="w-6 h-6 text-purple-400"/>
+                                                    </div>
+                                                    <h3 className="text-lg font-bold text-white mb-2">{cert.title}</h3>
+                                                    <p className="text-gray-400 text-sm mb-6">{cert.issuer}</p>
+                                                </div>
+                                                <a href={cert.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium text-purple-400 hover:text-white transition-colors mt-auto">
+                                                    View Certificate <IconLink className="w-4 h-4" />
+                                                </a>
+                                            </div>
+                                        </SpotlightCard>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        </div>
+                    </section>
+
+                    {/* CONTACT SECTION */}
+                    <section id="contact" className="py-24 px-4 relative z-10">
+                        <div className="max-w-4xl mx-auto">
+                            <SpotlightCard className="p-8 md:p-12">
+                                <div className="grid md:grid-cols-2 gap-12">
+                                    <div>
+                                        <h2 className="text-3xl font-bold mb-6 text-white">Let's Connect</h2>
+                                        <p className="text-gray-400 mb-8">Reach out for roles, internships, or collaboration ideas.</p>
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-4 text-gray-300">
+                                                <div className="p-3 bg-white/5 rounded-lg text-primary"><IconMail className="w-5 h-5"/></div>
+                                                <a href="mailto:sowmyakolli18@gmail.com" className="hover:text-white transition-colors">sowmyakolli18@gmail.com</a>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-gray-300">
+                                                <div className="p-3 bg-white/5 rounded-lg text-primary"><IconMapPin className="w-5 h-5"/></div>
+                                                <span>Visakhapatnam, India</span>
+                                            </div>
+                                            <div className="flex gap-4 mt-8">
+                                                <a href="https://github.com/Sowmya-Kolli" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-lg hover:bg-primary hover:text-white transition-all"><IconGithub className="w-5 h-5"/></a>
+                                                <a href="https://www.linkedin.com/in/sowmya-kolli-785998362/" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-lg hover:bg-primary hover:text-white transition-all"><IconLinkedin className="w-5 h-5"/></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <form className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-400 mb-1">Name</label>
+                                            <input type="text" className="w-full bg-[#0b0c1e] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white" placeholder="Your Name" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
+                                            <input type="email" className="w-full bg-[#0b0c1e] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white" placeholder="you@example.com" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-400 mb-1">Message</label>
+                                            <textarea rows="4" className="w-full bg-[#0b0c1e] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white" placeholder="Your message..."></textarea>
+                                        </div>
+                                        <button className="w-full py-3 bg-primary hover:bg-violet-600 rounded-lg font-medium transition-colors text-white">Send Message</button>
+                                    </form>
+                                </div>
+                            </SpotlightCard>
+                        </div>
+                    </section>
+
+                    <footer className="py-8 text-center text-gray-600 text-sm relative z-10 border-t border-white/5">
+                        <p>&copy; 2026 Kolli Sowmya. Engineered with React & Three.js.</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
