@@ -217,6 +217,7 @@
                 title: 'RIA Assistant',
                 desc: 'AI-powered voice assistant supporting natural conversations, speech interaction, intelligent responses, and automation features.',
                 tags: ['Python', 'Flask', 'AI', 'NLP'],
+                image: 'assets/ria.png',
                 icon: <IconBot className="w-6 h-6 text-white"/>,
                 github: 'https://github.com/Sowmya-Kolli/RIA-AI-Assistant',
                 demo: null
@@ -225,6 +226,7 @@
                 title: 'VisionSentinel',
                 desc: 'Computer vision based security system for face recognition, intruder detection, and real-time monitoring.',
                 tags: ['Python', 'OpenCV', 'Streamlit', 'Computer Vision'],
+                image: 'assets/visionsentinel.png',
                 icon: <IconCode className="w-6 h-6 text-white"/>,
                 github: 'https://github.com/Sowmya-Kolli/VisionSentinel-Intruder-Detection-System',
                 demo: 'https://visionsentinel-intruder-detection-system-navmreb5fkkcr5sot5vjg.streamlit.app/'
@@ -233,6 +235,7 @@
                 title: 'FORGE',
                 desc: 'Modern productivity management platform for task organization, workflow tracking, and analytics visualization.',
                 tags: ['Next.js', 'React', 'TypeScript', 'Supabase'],
+                image: 'assets/forge.png',
                 icon: <IconSettings className="w-6 h-6 text-white"/>,
                 github: 'https://github.com/Sowmya-Kolli/forge-execution-intelligence',
                 demo: 'https://forge-execution-intelligence.vercel.app/'
@@ -348,7 +351,7 @@
                                     <a href="#projects" className="px-8 py-4 rounded-full bg-primary hover:bg-violet-600 text-white font-semibold shadow-lg shadow-primary/25 transition-all transform hover:scale-105">
                                         View My Work
                                     </a>
-                                    <a href="resume.pdf" target="_blank" className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/5 font-semibold transition-all backdrop-blur-md">
+                                    <a href="Sowmya_Resume.pdf" target="_blank" className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/5 font-semibold transition-all backdrop-blur-md">
                                         Download Resume
                                     </a>
                                 </motion.div>
@@ -576,9 +579,17 @@
                                             <div className="flex flex-col h-full">
                                                 <div className="h-48 bg-gradient-to-br from-[#1a1b35] to-[#0f1021] rounded-lg mb-6 relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
                                                     <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
-                                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
-                                                        {project.icon}
-                                                    </div>
+                                                    {project.image ? (
+                                                        <img 
+                                                            src={project.image} 
+                                                            alt={project.title} 
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
+                                                            {project.icon}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 
                                                 <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{project.title}</h3>
